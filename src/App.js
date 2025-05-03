@@ -51,11 +51,11 @@ function App() {
     
     // Calculate sponsor price based on attendee count
     let calculatedSponsorPrice = 50; // Default
-    if (attendeesPerEvent > 500) {
+    if (peoplePerCollection > 500) {
       calculatedSponsorPrice = 200;
-    } else if (attendeesPerEvent > 300) {
+    } else if (peoplePerCollection > 300) {
       calculatedSponsorPrice = 150;
-    } else if (attendeesPerEvent > 150) {
+    } else if (peoplePerCollection > 150) {
       calculatedSponsorPrice = 100;
     }
     
@@ -112,13 +112,11 @@ function App() {
     photographers, 
     collectionsPerPhotographer, 
     sponsorsPerCollection, 
-    sponsorPrice, 
     peoplePerCollection,
     basicConversionRate,
     basicUnlockPrice,
     premiumConversionRate,
     premiumPackPrice,
-
     growthRate
   ]);
 
