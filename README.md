@@ -1,4 +1,6 @@
-# Getting Started with Create React App
+# primeshot Revenue Projection Tool
+
+A web application that visualizes how primeshot can scale to $500K in revenue by the end of 2025 by modeling photographer usage, events, brand upsells, and attendee conversions.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
@@ -63,7 +65,26 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/a
 
 ### Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+#### Deploying to Vercel
+
+This project is optimized for deployment on Vercel. Follow these steps to deploy:
+
+1. Create a Vercel account at [vercel.com](https://vercel.com) if you don't have one
+2. Install the Vercel CLI: `npm install -g vercel`
+3. Run `vercel login` and follow the prompts to authenticate
+4. From the project directory, run `vercel` to deploy
+5. Follow the prompts in the CLI to configure your deployment
+6. Once deployed, Vercel will provide you with a URL to access your application
+
+Alternatively, you can deploy directly from the Vercel dashboard:
+
+1. Push your code to a Git repository (GitHub, GitLab, or Bitbucket)
+2. Log in to [vercel.com](https://vercel.com)
+3. Click "New Project" and import your repository
+4. Configure the project settings (the defaults should work fine for this React app)
+5. Click "Deploy"
+
+For more general deployment information: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
 
 ### `npm run build` fails to minify
 
