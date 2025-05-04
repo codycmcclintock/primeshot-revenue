@@ -30,11 +30,10 @@ function App() {
 
   // Calculated values
   const [monthlyStats, setMonthlyStats] = useState({
-    totalEvents: 0,
+    totalCollections: 0,
     sponsorRevenue: 0,
     basicAttendeeRevenue: 0,
     premiumAttendeeRevenue: 0,
-
     totalAttendeeRevenue: 0,
     totalGrossRevenue: 0,
     photographerPayouts: 0,
@@ -46,67 +45,70 @@ function App() {
 
   // Calculate monthly stats and projections when any variable changes
   useEffect(() => {
-    // Calculate monthly stats
-    const totalCollections = photographers * collectionsPerPhotographer;
-    
-    // Calculate sponsor price based on attendee count
-    let calculatedSponsorPrice = 50; // Default
-    if (peoplePerCollection > 500) {
-      calculatedSponsorPrice = 200;
-    } else if (peoplePerCollection > 300) {
-      calculatedSponsorPrice = 150;
-    } else if (peoplePerCollection > 150) {
-      calculatedSponsorPrice = 100;
+    try {
+      // Calculate monthly stats
+      const totalCollections = photographers * collectionsPerPhotographer;
+      
+      // Calculate sponsor price based on attendee count
+      let calculatedSponsorPrice = 50; // Default
+      if (peoplePerCollection > 500) {
+        calculatedSponsorPrice = 200;
+      } else if (peoplePerCollection > 300) {
+        calculatedSponsorPrice = 150;
+      } else if (peoplePerCollection > 150) {
+        calculatedSponsorPrice = 100;
+      }
+      
+      const sponsorRevenue = totalCollections * sponsorsPerCollection * calculatedSponsorPrice;
+      
+      // Calculate attendee/people revenues
+      const totalPeople = totalCollections * peoplePerCollection;
+      const basicUnlocks = totalPeople * (basicConversionRate / 100);
+      const premiumPacks = totalPeople * (premiumConversionRate / 100);
+      
+      const basicAttendeeRevenue = basicUnlocks * basicUnlockPrice;
+      const premiumAttendeeRevenue = premiumPacks * premiumPackPrice;
+      const totalAttendeeRevenue = basicAttendeeRevenue + premiumAttendeeRevenue;
+      
+      // Calculate total revenue based on model
+      let totalGrossRevenue;
+      if (revenueModel === 'b2b') {
+        totalGrossRevenue = sponsorRevenue;
+      } else if (revenueModel === 'b2c' || revenueModel === 'race') {
+        totalGrossRevenue = totalAttendeeRevenue;
+      }
+      
+      // Calculate photographer payouts (60% for B2C/Race models, 0% for B2B)
+      const photographerPayouts = (revenueModel === 'b2c' || revenueModel === 'race') ? 
+        totalGrossRevenue * (photographerRevShare / 100) : 0;
+      
+      // Calculate net revenue (after photographer payouts)
+      const totalNetRevenue = totalGrossRevenue - photographerPayouts;
+
+      setMonthlyStats({
+        totalCollections,
+        sponsorRevenue,
+        basicAttendeeRevenue,
+        premiumAttendeeRevenue,
+        totalAttendeeRevenue,
+        totalGrossRevenue,
+        photographerPayouts,
+        totalNetRevenue,
+      });
+
+      // Calculate 12-month projections with growth factor
+      const newProjections = [];
+      let currentRevenue = totalNetRevenue;
+
+      for (let i = 0; i < 12; i++) {
+        newProjections.push(Math.round(currentRevenue));
+        currentRevenue *= (1 + growthRate / 100);
+      }
+
+      setProjections(newProjections);
+    } catch (error) {
+      console.error('Error calculating projections:', error);
     }
-    
-    const sponsorRevenue = totalCollections * sponsorsPerCollection * calculatedSponsorPrice;
-    
-    // Calculate attendee/people revenues
-    const totalPeople = totalCollections * peoplePerCollection;
-    const basicUnlocks = totalPeople * (basicConversionRate / 100);
-    const premiumPacks = totalPeople * (premiumConversionRate / 100);
-    
-    const basicAttendeeRevenue = basicUnlocks * basicUnlockPrice;
-    const premiumAttendeeRevenue = premiumPacks * premiumPackPrice;
-    const totalAttendeeRevenue = basicAttendeeRevenue + premiumAttendeeRevenue;
-    
-    // Calculate total revenue based on model
-    let totalGrossRevenue;
-    if (revenueModel === 'b2b') {
-      totalGrossRevenue = sponsorRevenue;
-    } else if (revenueModel === 'b2c' || revenueModel === 'race') {
-      totalGrossRevenue = totalAttendeeRevenue;
-    }
-    
-    // Calculate photographer payouts (60% for B2C/Race models, 0% for B2B)
-    const photographerPayouts = (revenueModel === 'b2c' || revenueModel === 'race') ? 
-      totalGrossRevenue * (photographerRevShare / 100) : 0;
-    
-    // Calculate net revenue (after photographer payouts)
-    const totalNetRevenue = totalGrossRevenue - photographerPayouts;
-
-    setMonthlyStats({
-      totalCollections,
-      sponsorRevenue,
-      basicAttendeeRevenue,
-      premiumAttendeeRevenue,
-
-      totalAttendeeRevenue,
-      totalGrossRevenue,
-      photographerPayouts,
-      totalNetRevenue,
-    });
-
-    // Calculate 12-month projections with growth factor
-    const projections = [];
-    let currentRevenue = totalNetRevenue;
-
-    for (let i = 0; i < 12; i++) {
-      projections.push(Math.round(currentRevenue));
-      currentRevenue *= (1 + growthRate / 100);
-    }
-
-    setProjections(projections);
   }, [
     revenueModel,
     photographers, 
@@ -117,7 +119,8 @@ function App() {
     basicUnlockPrice,
     premiumConversionRate,
     premiumPackPrice,
-    growthRate
+    growthRate,
+    photographerRevShare
   ]);
 
   // Format currency
@@ -134,7 +137,7 @@ function App() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">primeshot Revenue Projections</h1>
+          <h1 className="text-3xl font-bold text-gray-900">PrimeShot Revenue Projections</h1>
           <p className="mt-2 text-lg text-gray-600">Scale to $500K+ by December 2025</p>
         </div>
 
@@ -230,15 +233,6 @@ function App() {
                       </span>
                     </div>
                   </div>
-                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-600 mb-2">Sponsor Value Proposition:</p>
-                    <ul className="text-xs text-gray-600 list-disc pl-4 space-y-1">
-                      <li>Full resolution event photos in one place</li>
-                      <li>Social footprint analytics of the event</li>
-                      <li>Attendee insights and UGC creator identification</li>
-                      <li>AI-powered content recommendations</li>
-                    </ul>
-                  </div>
                 </>
               )}
               
@@ -304,7 +298,7 @@ function App() {
             {/* Summary Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <StatsCard
-                title="Primeshot Collections"
+                title="PrimeShot Collections"
                 value={monthlyStats.totalCollections.toLocaleString()}
                 subtitle="Total collections per month"
                 color="blue"
@@ -389,7 +383,7 @@ function App() {
                 <span className="font-medium text-gray-900">{formatCurrency(monthlyStats.photographerPayouts)}</span>
               </div>
               <div className="flex justify-between items-center mt-2 pt-4 border-t border-gray-100">
-                <span className="text-gray-800 font-medium">Net Revenue (primeshot)</span>
+                <span className="text-gray-800 font-medium">Net Revenue (PrimeShot)</span>
                 <span className="font-bold text-gray-900">{formatCurrency(monthlyStats.totalNetRevenue)}</span>
               </div>
             </div>
@@ -397,7 +391,7 @@ function App() {
         </div>
 
         <div className="text-center text-sm text-gray-500 mt-8">
-          <p>primeshot Revenue Projection Tool © 2025</p>
+          <p>PrimeShot Revenue Projection Tool © 2025</p>
         </div>
       </div>
     </div>
